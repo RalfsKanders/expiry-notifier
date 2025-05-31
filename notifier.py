@@ -1,3 +1,4 @@
+git push -u origin main
 import json
 import smtplib
 import os
