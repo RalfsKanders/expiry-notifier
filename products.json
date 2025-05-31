@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Milk",
+    "expiry_date": "2025-05-21"
+  },
+  {
+    "name": "Yogurt",
+    "expiry_date": "2025-05-22"
+  },
+  {
+    "name": "Cheese",
+    "expiry_date": "2025-05-25"
+  },
+  {
+    "name": "Test Milk",
+    "expiry_date": "2025-05-31"
+  },
+  {
+    "name": "Test Milk",
+    "expiry_date": "2025-05-21"
+  },
+  {
+    "name": "Test Milk",
+    "expiry_date": "2025-06-01"
+  }
+]
