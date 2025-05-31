@@ -4,9 +4,13 @@ import os
 from email.message import EmailMessage
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from prefect.schedules import Interval
 from prefect import flow, task
 
+
 load_dotenv()
+
+schedulecustom = Interval(timedelta(minutes=1))
 
 EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
@@ -42,10 +46,25 @@ def check_and_notify(products):
         if expiry_date - today == timedelta(days=1):
             send_email(product["name"], product["expiry_date"])
 
+
 @flow(name="Product Expiry Notifier")
 def expiry_notifier_flow():
     products = load_products()
     check_and_notify(products)
+
+def create_deployment():
+
+    try:
+        print("Building deployment...")
+        myflow.deploy(
+            name="Product_Expiry_Notifier",
+            schedule=schedulecustom,
+            work_pool_name = "my_work_pool")
+        print("Applying deployment...")
+        deployment.apply()
+        print("Deployment successfully applied!")
+    except:
+        print(f"Error during deployment process")
 
 if __name__ == "__main__":
     expiry_notifier_flow()
