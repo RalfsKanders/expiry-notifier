@@ -1,50 +1,51 @@
-from datetime import datetime, timedelta
 import json
 import smtplib
-from email.message import EmailMessage
-from prefect import flow, task
 import os
+from email.message import EmailMessage
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+from prefect import flow, task
 
-YOUR_EMAIL = "kristofersrudzats0@gmail.com"
-APP_PASSWORD = os.getenv("EMAIL_PASSWORD")
-RECEIVER_EMAIL = "ralfs.kanders@gmail.com"
+load_dotenv()
+
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+NOTIFY_TO = "ralfs.kanders@gmail.com"
 
 @task
-def load_products(filepath="products.json"):
-    with open(filepath, "r") as file:
+def load_products():
+    with open("products.json", "r") as file:
         return json.load(file)
 
 @task
 def send_email(product_name, expiry_date):
     msg = EmailMessage()
-    msg["Subject"] = f"⚠️ {product_name} expires tomorrow!"
-    msg["From"] = YOUR_EMAIL
-    msg["To"] = RECEIVER_EMAIL
-    msg.set_content(f"Reminder: {product_name} will expire on {expiry_date}. Please use it soon!")
+    msg["Subject"] = f"⏰ Reminder: {product_name} expires tomorrow!"
+    msg["From"] = EMAIL_ADDRESS
+    msg["To"] = NOTIFY_TO
+    msg.set_content(f"The product '{product_name}' will expire on {expiry_date}.\nCheck your inventory!")
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-            smtp.login(YOUR_EMAIL, APP_PASSWORD)
+        with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
+            smtp.starttls()
+            smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
             smtp.send_message(msg)
-        print(f"✅ Email sent for {product_name}.")
+        print(f"✅ Email sent for {product_name}")
     except Exception as e:
-        print("❌ Failed to send email:", e)
+        print(f"❌ Failed to send email: {e}")
 
 @task
 def check_and_notify(products):
-    today = datetime.today().date()
+    today = datetime.now().date()
     for product in products:
-        try:
-            expiry = datetime.strptime(product["expiry_date"], "%Y-%m-%d").date()
-            if expiry - today == timedelta(days=1):
-                send_email(product["name"], product["expiry_date"])
-        except ValueError:
-            print(f"⚠️ Invalid date format for: {product['name']}")
+        expiry_date = datetime.strptime(product["expiry_date"], "%Y-%m-%d").date()
+        if expiry_date - today == timedelta(days=1):
+            send_email(product["name"], product["expiry_date"])
 
 @flow(name="Product Expiry Notifier")
-def expiry_notifier():
+def expiry_notifier_flow():
     products = load_products()
     check_and_notify(products)
 
 if __name__ == "__main__":
-    expiry_notifier()
+    expiry_notifier_flow()
