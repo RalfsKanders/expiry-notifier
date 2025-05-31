@@ -22,5 +22,17 @@
   {
     "name": "Test Milk",
     "expiry_date": "2025-06-01"
+  },
+  {
+    "name": "meatsticks",
+    "expiry_date": "2025-06-01"
+  },
+  {
+    "name": "cheese",
+    "expiry_date": "2025-06-01"
+  },
+  {
+    "name": "beef meat",
+    "expiry_date": "2025-06-01"
   }
 ]
